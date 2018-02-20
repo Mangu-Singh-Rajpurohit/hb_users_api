@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework.authtoken',
     'rest_users'
 ]
 
@@ -119,3 +120,44 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+#   logging related settings
+LOGGING = {
+   'version': 1,
+   'disable_existing_loggers': False,
+   'formatters': {
+      'django': {
+         'format':'%(asctime)s %(name)-12s %(levelname)8s %(message)s',
+       },
+    },
+
+   'handlers': {
+      'FileHandler': {
+         'level': 'DEBUG',
+         'class': 'logging.FileHandler',
+         'formatter': 'django',
+         'filename': os.path.join(BASE_DIR, "server.log")
+       },
+   },
+
+   'loggers': {
+      'root':{
+         'handlers': ['FileHandler'],
+         'propagate': True,
+         'level': 'DEBUG',
+       }
+    }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
