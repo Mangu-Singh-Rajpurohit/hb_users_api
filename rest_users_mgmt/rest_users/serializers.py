@@ -1,3 +1,4 @@
+from rest_framework.authtoken.models import Token
 from rest_framework.fields import CharField
 from rest_framework.serializers import Serializer, ModelSerializer
 from django.contrib.auth import get_user_model
@@ -39,3 +40,10 @@ class UserPrimaryDtlsSerializer(ModelSerializer):
 		model = USER_MODEL
 		fields = ("id", "username", "email")
 		read_only_fields = ("id", )
+
+
+class UserTokenSerializer(ModelSerializer):
+	class Meta:
+		model = Token
+		fields = ("key", "created",)
+		read_only_fields = ("key", "created")

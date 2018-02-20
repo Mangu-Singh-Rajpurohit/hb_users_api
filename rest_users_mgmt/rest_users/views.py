@@ -6,14 +6,15 @@ from django.http.response import HttpResponseRedirect
 
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import detail_route, list_route
-from rest_framework.exceptions import NotAuthenticated
-from rest_framework.mixins import CreateModelMixin, UpdateModelMixin
+from rest_framework.exceptions import NotAuthenticated, NotFound
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 from rest_framework.viewsets import GenericViewSet
 
 from rest_users.serializers import UserSignUpSerializer, UserPrimaryDtlsSerializer, \
-				UserAuthSerializer
+				UserAuthSerializer, UserTokenSerializer
 
 LOGGER = logging.getLogger("root")
 
@@ -80,14 +81,13 @@ class UserAuthViewSet(GenericViewSet):
 	@list_route(methods=["GET", "POST"])
 	def logout(self, request, *args, **kwargs):
 		LOGGER.debug("Received received for logout from web app")
-		if request.user.is_authenticated:
-			try:
-				logout(request, user)
-				LOGGER.debug("User: %s logged out successfully", request.user.username)
-			
-			except Exception as e:
-				LOGGER.error("An error have occured, while logging out user: %s", request.user.username)
-				LOGGER.exception(e)
+		try:
+			logout(request)
+			LOGGER.debug("User: %s logged out successfully", request.user.username)
+		
+		except Exception as e:
+			LOGGER.error("An error have occured, while logging out user: %s", request.user.username)
+			LOGGER.exception(e)
 		
 		return HttpResponseRedirect(redirect_to='/')
 
@@ -111,3 +111,13 @@ class UserPasswordResetViewSet(GenericViewSet):
 	@detail_route(methods=["PUT"])
 	def resetpassword(self, request, pk, *args, **kwargs):
 		pass
+
+
+class UserTokenViewSet(GenericViewSet, ListModelMixin):
+	permission_classes = (IsAuthenticated, )
+	queryset = Token.objects.all()
+	serializer_class = UserTokenSerializer
+	
+	def get_queryset(self, *args, **kwargs):
+		queryset = super(UserTokenViewSet, self).get_queryset(*args, **kwargs)
+		return queryset.filter(user=self.request.user)
