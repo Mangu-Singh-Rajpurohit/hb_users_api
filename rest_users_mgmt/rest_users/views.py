@@ -101,9 +101,33 @@ class UserAuthViewSet(GenericViewSet):
 		return Response(user_dtls_serializer.data)
 
 class UserPasswordChangeViewSet(GenericViewSet):
-	@detail_route(methods=["PUT"])
-	def changepassword(self, request, pk, *args, **kwargs):
-		pass
+	
+	def _validate_password_dtls(current_password, new_password, confirmed_new_password):
+		if not current_password:
+			raise ValidationError("Invalid current password")
+		
+		if not new_password:
+			raise ValidationError("Invalid new password")
+			
+		if new_password != confirmed_new_password:
+			raise ValidationError("New password and its confirmed form are not same")
+	
+		if new_password == current_password:
+			raise ValidationError("Current password and new password are same")
+	
+	@list_route(methods=["PUT"], permission_classes=(IsAuthenticated, ))
+	def changepassword(self, request, *args, **kwargs):
+		current_password = request.data.get("current_password", None)
+		new_password = request.data.get("new_password", None)
+		confirmed_new_password = request.data.get("confirmed_new_password", None)
+
+		self._validate_password_dtls(current_password, new_password, confirmed_new_password)
+		
+		if not self.request.user.check_password(current_password):
+			raise ValidationError("Current password doesn't match with exisiting password")
+		
+		self.user.set_password(new_password)
+		return Response({"status": "success"})
 
 
 class UserPasswordResetViewSet(GenericViewSet):

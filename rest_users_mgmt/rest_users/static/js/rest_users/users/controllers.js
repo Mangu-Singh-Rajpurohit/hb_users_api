@@ -101,4 +101,5 @@ function registrationController($state, UsersService)
 
 angular.module("users_app.controllers", ["users_app.services", "users_app.services.globals"])
 	.controller("LoginController", ["$window", "$state", "UserSessionService", "UsersService", loginController])
-	.controller("LandingController", ["UserSessionService", "UsersService", landingController]);
+	.controller("LandingController", ["UserSessionService", "UsersService", landingController])
+	.controller("RegistrationController", ["$state", "UsersService", registrationController]);

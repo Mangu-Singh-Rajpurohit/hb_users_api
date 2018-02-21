@@ -1,11 +1,30 @@
 "user strict"
-function appProxyController($state, UserSessionService, HeartBeatService)
+function appProxyController($state, $interval, $window, UserSessionService, HeartBeatService)
 {
 	var vm = this;
 	vm.session = UserSessionService;
+	
+	function onHeartBeatFailedForLoggedInUser()
+	{
+		$window.reload();
+	}
+	
+	vm.checkHeartBeat = function(successcb, failurecb)
+	{
+		HeartBeatService.isSessionActive(successcb, failurecb);
+	};
+	
+	vm.checkHeartBeatForLoggedInUser = function()
+	{
+		if (UserSessionService.isAuthenticated())
+		{
+			vm.checkHeartBeat(null, onHeartBeatFailedForLoggedInUser);
+		}
+	}
+	
 	vm.onInit = function()
 	{
-		HeartBeatService.isSessionActive
+		vm.checkHeartBeat
 		(
 			function(res)
 			{
@@ -21,7 +40,9 @@ function appProxyController($state, UserSessionService, HeartBeatService)
 			}
 		);
 	};
+	
+	$interval(vm.checkHeartBeatForLoggedInUser, 15000);
 }
 
 angular.module("users_app.global_controllers", [])
-	.controller("AppProxyController", ["$state", "UserSessionService", "HeartBeatService", appProxyController]);
+	.controller("AppProxyController", ["$state", "$interval", "$window", "UserSessionService", "HeartBeatService", appProxyController]);

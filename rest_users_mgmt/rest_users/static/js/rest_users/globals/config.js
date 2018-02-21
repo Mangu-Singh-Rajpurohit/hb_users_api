@@ -30,7 +30,7 @@ function serviceConfig($httpProvider, $qProvider, $stateProvider, $resourceProvi
     
 	$stateProvider
 		.state('proxy-state', {
-			url: '/login',
+			url: '/proxy',
 			template: "<h3>Loading App...</h3>",
 			controller: "AppProxyController",
 			controllerAs: "vm"
