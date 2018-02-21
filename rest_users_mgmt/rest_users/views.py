@@ -4,6 +4,7 @@ from django.db import transaction
 from django.contrib.auth import authenticate, login, logout
 from django.http.response import HttpResponseRedirect
 
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import NotAuthenticated, NotFound
@@ -91,6 +92,13 @@ class UserAuthViewSet(GenericViewSet):
 		
 		return HttpResponseRedirect(redirect_to='/')
 
+
+	@list_route(methods=["GET"], 
+		authentication_classes=(TokenAuthentication, SessionAuthentication),
+		permission_classes=(IsAuthenticated, ))
+	def heartbeat(self, request, *args, **kwargs):
+		user_dtls_serializer = UserPrimaryDtlsSerializer(instance=self.request.user)
+		return Response(user_dtls_serializer.data)
 
 class UserPasswordChangeViewSet(GenericViewSet):
 	@detail_route(methods=["PUT"])

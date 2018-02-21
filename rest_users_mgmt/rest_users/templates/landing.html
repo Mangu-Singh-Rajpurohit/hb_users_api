@@ -1,0 +1,12 @@
+<div ng-init="vm.onInit();">
+	<div>
+		<section>
+			    <div>
+				{% verbatim %}
+				<p>Hello {{vm.session.username}}, your api-key is {{vm.apikey.key}}.</p>
+				<p>Use this apikey to access api outside browser, without login.</p>
+				{% endverbatim %}
+			    </div>
+		</section>
+	</div>
+</div>

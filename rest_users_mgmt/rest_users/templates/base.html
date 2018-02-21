@@ -1,0 +1,28 @@
+-{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Users Management App</title>
+	</head>
+	<body ng-app="users_app" ng-controller="AppProxyController as vm" ng-init="vm.onInit()">
+		<h1><center>Users Management Application</center></h1>
+		<nav>
+			<ul ng-if="vm.session.isAuthenticated();">
+				<li><a href="" ui-sref="change-password">Change Password</a></li>
+				<li><a href="/users/logout/">Logout</a></li>
+			</ul>
+		</nav>
+		<div ui-view>
+		</div>
+	</body>
+	<script src="{% static 'js/rest_users/third-party/angular.js' %}"></script>
+	<script src="{% static 'js/rest_users/third-party/angular-ui-router.js' %}"></script>
+	<script src="{% static 'js/rest_users/third-party/angular-resource.min.js' %}"></script>
+	
+	<script src="{% static 'js/rest_users/globals/services.js' %}"></script>
+	<script src="{% static 'js/rest_users/globals/controllers.js' %}"></script>
+	
+	<script src="{% static 'js/rest_users/users/services.js' %}"></script>
+	<script src="{% static 'js/rest_users/users/controllers.js' %}"></script>
+	<script src="{% static 'js/rest_users/globals/config.js' %}"></script>
+</html>
