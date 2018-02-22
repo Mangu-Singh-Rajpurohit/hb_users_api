@@ -1,13 +1,13 @@
 import logging
 
 from django.db import transaction
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.http.response import HttpResponseRedirect
 
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import detail_route, list_route
-from rest_framework.exceptions import NotAuthenticated, NotFound
+from rest_framework.exceptions import NotAuthenticated, NotFound, ValidationError
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -102,7 +102,7 @@ class UserAuthViewSet(GenericViewSet):
 
 class UserPasswordChangeViewSet(GenericViewSet):
 	
-	def _validate_password_dtls(current_password, new_password, confirmed_new_password):
+	def _validate_password_dtls(self, current_password, new_password, confirmed_new_password):
 		if not current_password:
 			raise ValidationError("Invalid current password")
 		
@@ -126,7 +126,10 @@ class UserPasswordChangeViewSet(GenericViewSet):
 		if not self.request.user.check_password(current_password):
 			raise ValidationError("Current password doesn't match with exisiting password")
 		
-		self.user.set_password(new_password)
+		self.request.user.set_password(new_password)
+		self.request.user.save()
+		update_session_auth_hash(self.request, self.request.user)
+		
 		return Response({"status": "success"})
 
 

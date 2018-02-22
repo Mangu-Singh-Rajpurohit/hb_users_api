@@ -3,6 +3,10 @@ function serviceConfig($httpProvider, $qProvider, $stateProvider, $resourceProvi
 {
 	$resourceProvider.defaults.stripTrailingSlashes = false;
 	$qProvider.errorOnUnhandledRejections(false);
+	
+	$httpProvider.defaults.xsrfCookieName = 'csrftoken';
+	$httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+	
 	$httpProvider.interceptors.push(function($q, $injector) 
 	{
 		return {
@@ -51,6 +55,12 @@ function serviceConfig($httpProvider, $qProvider, $stateProvider, $resourceProvi
 			url: '/landing',
 			templateUrl: "templates/landing",
 			controller: "LandingController",
+			controllerAs: "vm"
+		})
+		.state("change-password", {
+			url: '/change-password',
+			templateUrl: "templates/change-password",
+			controller: "ChangePasswordController",
 			controllerAs: "vm"
 		})
 };

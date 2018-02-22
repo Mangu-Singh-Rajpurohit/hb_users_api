@@ -8,7 +8,8 @@
 		<h1><center>Users Management Application</center></h1>
 		<nav>
 			<ul ng-if="vm.session.isAuthenticated();">
-				<li><a href="" ui-sref="change-password">Change Password</a></li>
+				<li><a ui-sref="landing">Home</a></li>
+				<li><a ui-sref="change-password">Change Password</a></li>
 				<li><a href="/users/logout/">Logout</a></li>
 			</ul>
 		</nav>

@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^templates/login$', TemplateView.as_view(template_name="login.html")),
     url(r'^templates/signup$', TemplateView.as_view(template_name="signup.html")),
     url(r'^templates/landing$', TemplateView.as_view(template_name="landing.html")),
+    url(r'^templates/change-password$', TemplateView.as_view(template_name="change-password.html")),
     url(r'^$', TemplateView.as_view(template_name="base.html")),
     
     url(r'^users/', include("rest_users.urls")),

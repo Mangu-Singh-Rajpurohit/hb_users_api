@@ -99,7 +99,67 @@ function registrationController($state, UsersService)
 	};
 };
 
+
+function changePasswordController(UsersService)
+{
+	var vm = this;
+	vm.passwordDtls = {
+		current_password: "",
+		new_password: "",
+		confirmed_new_password: ""
+	};
+	
+	vm.validatePasswords = function()
+	{
+		if (!vm.passwordDtls.current_password)
+		{
+			alert("Blank current password");
+			return false;
+		}
+		
+		else if (!vm.passwordDtls.new_password)
+		{
+			alert("Blank new password");
+			return false;
+		}
+		
+		else if (!vm.passwordDtls.confirmed_new_password)
+		{
+			alert("Blank confirm new password");
+			return false;
+		}
+		
+		else if (vm.passwordDtls.new_password != vm.passwordDtls.confirmed_new_password)
+		{
+			alert("New password and confirm passwords don't match");
+			return false;
+		}
+		
+		return true;
+	};
+	
+	vm.onPasswordChange = function(resp)
+	{
+		alert("Password changed successfully");
+	};
+	
+	vm.onPasswordChangeFailed = function(resp)
+	{
+		var msg = resp.detail || "An error have occured, while changing password";
+		alert(msg);
+	};
+	
+	vm.changePassword = function()
+	{
+		if (!vm.validatePasswords())
+			return;
+
+		UsersService.changePassword(vm.passwordDtls, vm.onPasswordChange, vm.onPasswordChangeFailed);
+	};
+};
+
 angular.module("users_app.controllers", ["users_app.services", "users_app.services.globals"])
 	.controller("LoginController", ["$window", "$state", "UserSessionService", "UsersService", loginController])
 	.controller("LandingController", ["UserSessionService", "UsersService", landingController])
-	.controller("RegistrationController", ["$state", "UsersService", registrationController]);
+	.controller("RegistrationController", ["$state", "UsersService", registrationController])
+	.controller("ChangePasswordController", ["UsersService", changePasswordController]);

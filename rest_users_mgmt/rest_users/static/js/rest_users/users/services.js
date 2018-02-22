@@ -14,6 +14,10 @@ function usersService($resource)
 			url: "/users/token/",
 			method: "GET",
 			isArray: true
+		},
+		changePassword: {
+			url: "/users/changepassword/",
+			method: "PUT",
 		}
 	});
 };
