@@ -78,14 +78,14 @@ function registrationController($state, UsersService)
 	
 	vm.onRegistrationSuccess = function(resp)
 	{
-		alert("Your account has been registered successfully");
-		$state.go("login");
+		alert("Your account has been registered successfully. An email has been sent to you for activation of account.");
 		
 	};
 	
-	vm.onRegistrationFailed = function()
+	vm.onRegistrationFailed = function(resp)
 	{
-		alert("An error have occured, while registering your account");
+		var msg = resp.detail || "An error have occured, while registering your account";
+		alert(msg);
 	};
 	
 	vm.registerUser = function()

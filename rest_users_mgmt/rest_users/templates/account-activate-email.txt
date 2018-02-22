@@ -1,0 +1,7 @@
+Hello {{username}},
+
+Welcome to User-management system. Your registration is successful.
+Click on {{target_url}} to activate your account.
+
+Thanks,
+User Management Team.

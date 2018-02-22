@@ -10,7 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os
+import os, json
+
+dict_production_settings = {}
+try:
+	with open(".credentials", "r") as f_handle:
+		dict_production_settings = json.load(f_handle)
+except IOError:
+	pass
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +27,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '#58bx$3f7=v$n#6v9&pi++qo=wfz0^306eho^07foz6ufq=ca6'
+SECRET_KEY = dict_production_settings.get("SECRET_KEY", '#58bx$3f7=v$n#6v9&pi++qo=wfz0^306eho^07foz6ufq=ca6')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -149,6 +156,7 @@ LOGGING = {
     }
 }
 
+# Rest-framework settings
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -161,3 +169,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
+# Django email settings
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = dict_production_settings.get("EMAIL_HOST_USER", None)
+EMAIL_HOST_PASSWORD = dict_production_settings.get("EMAIL_HOST_PASSWORD", None)
