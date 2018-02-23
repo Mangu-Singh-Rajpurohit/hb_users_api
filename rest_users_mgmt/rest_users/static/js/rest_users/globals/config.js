@@ -63,6 +63,12 @@ function serviceConfig($httpProvider, $qProvider, $stateProvider, $resourceProvi
 			controller: "ChangePasswordController",
 			controllerAs: "vm"
 		})
+		.state("accept-email", {
+			url: '/accept-email',
+			templateUrl: "templates/accept-email",
+			controller: "AcceptEmailController",
+			controllerAs: "vm"
+		});
 };
 
 var app = angular.module('users_app', ["ui.router", "ngResource", 

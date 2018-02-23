@@ -49,14 +49,26 @@ class UtilityManager(object):
 		return UtilityManager.send_email(subject, message_body, sender, receivers, auth_user, auth_password)
 	
 	@staticmethod
-	def reset_user_account_password_email(subject, body, sender, receivers, auth_user, auth_password):
-		template_name = ""
+	def reset_user_account_password_email(request, user_dtls, sender, auth_user, auth_password):
+		user_hash = UtilityManager.calculate_user_hash(user_dtls)
+		user_token = PasswordResetTokenGenerator().make_token(user_dtls)
+		
+		query_string = urllib.urlencode({"user": user_hash, "token": user_token})
+		target_url = request.build_absolute_uri(reverse("password-reset-validate-reset-token"))
+		url_with_query_str = "{}?{}".format(target_url, query_string)
+		
+		template_name = "password-reset-email.txt"
 		context = {
+			"username": user_dtls.username,
+			"target_url": url_with_query_str
 		}
 		
+		subject = "Password Reset Email"
+		receivers = [user_dtls.email]
 		message_body = render_to_string(template_name, context)
 		
 		return UtilityManager.send_email(subject, message_body, sender, receivers, auth_user, auth_password)
+	
 	
 	@staticmethod
 	def send_email(subject, body, sender, receivers, auth_user, auth_password):

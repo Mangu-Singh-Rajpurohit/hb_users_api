@@ -24,6 +24,10 @@ urlpatterns = [
     url(r'^templates/activation-failed$', TemplateView.as_view(template_name="activation-failed.html")),
     url(r'^templates/activation-success$', TemplateView.as_view(template_name="activation-success.html")),
     url(r'^templates/change-password$', TemplateView.as_view(template_name="change-password.html")),
+    url(r'^templates/accept-email$', TemplateView.as_view(template_name="accept-email.html")),
+    url(r'^templates/reset-password$', TemplateView.as_view(template_name="reset-password.html")),
+    url(r'^templates/reset-success$', TemplateView.as_view(template_name="reset-success.html")),
+    url(r'^templates/reset-failed$', TemplateView.as_view(template_name="reset-failed.html")),
     url(r'^$', TemplateView.as_view(template_name="base.html")),
     
     url(r'^users/', include("rest_users.urls")),

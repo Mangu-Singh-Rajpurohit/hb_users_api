@@ -11,6 +11,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import NotAuthenticated, NotFound, ValidationError
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
@@ -24,20 +25,20 @@ from rest_users.utils import UtilityManager
 LOGGER = logging.getLogger("root")
 USER_MODEL = get_user_model()
 
+def get_param(request, param_name):
+	if param_name in request.GET:
+		return request.GET[param_name]
+	elif param_name in request.POST:
+		return request.POST[param_name]
+	elif param_name in request.data:
+		return request.data[param_name]
+		
+	return None
+	
 
 class UserSignupViewSet(CreateModelMixin, GenericViewSet):
 	serializer_class = UserSignUpSerializer
 	authentication_classes = ()
-
-	def _get_param(self, request, param_name):
-		if param_name in request.GET:
-			return request.GET[param_name]
-		elif param_name in request.POST:
-			return request.POST[param_name]
-		elif param_name in request.data:
-			return request.data[param_name]
-			
-		return None
 
 	def create(self, request, *args, **kwargs):
 		LOGGER.debug("Received request for creating user")
@@ -69,8 +70,8 @@ class UserSignupViewSet(CreateModelMixin, GenericViewSet):
 
 	@list_route(methods=["GET", "POST", "PUT"])
 	def activate(self, request, *args, **kwargs):
-		user_token = self._get_param(request, "token")
-		user_hash = self._get_param(request, "user")
+		user_token = self.get_param(request, "token")
+		user_hash = self.get_param(request, "user")
 		
 		if not user_token or not user_hash:
 			LOGGER.debug("Missing user_token/user_hash for user activation request")
@@ -182,17 +183,76 @@ class UserPasswordChangeViewSet(GenericViewSet):
 
 class UserPasswordResetViewSet(GenericViewSet):
 	
-	@detail_route(methods=["POST"])
-	def sendemail(self, request, pk, *args, **kwargs):
-		pass
-
-	@detail_route(methods=["POST"])
-	def validate_reset_token(self, request, pk, *args, **kwargs):
-		pass
+	def _validate_password_dtls(self, new_password, confirmed_new_password):
+		if not new_password:
+			raise ValidationError("Invalid new password")
+			
+		if new_password != confirmed_new_password:
+			raise ValidationError("New password and its confirmed form are not same")
 	
-	@detail_route(methods=["PUT"])
-	def resetpassword(self, request, pk, *args, **kwargs):
-		pass
+	@list_route(methods=["POST"])
+	def sendemail(self, request, *args, **kwargs):
+		email = request.data.get("email", None)
+		if not email:
+			raise ValidationError("Email: {} missing.".format(email))
+		
+		try:
+			user_instance = USER_MODEL.objects.get(email=email)
+		except USER_MODEL.DoesNotExist:
+			raise NotFound("Invalid email address")
+		
+		UtilityManager.reset_user_account_password_email(request, user_instance, 
+			settings.EMAIL_HOST_USER, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+			
+		return Response({"status": "success"})
+
+	@list_route(methods=["GET"])
+	def validate_reset_token(self, request, *args, **kwargs):
+		user_token = get_param(request, "token")
+		user_hash = get_param(request, "user")
+		
+		if not user_token or not user_hash:
+			LOGGER.debug("Missing user_token/user_hash for password reset request")
+			return HttpResponseRedirect("/templates/reset-failed")
+		
+		user_id, username = UtilityManager.get_user_from_hash(user_hash)
+		try:
+			user_instance = USER_MODEL.objects.get(pk=user_id, username=username)
+		
+		except USER_MODEL.DoesNotExist:
+			LOGGER.debug("User with id: {} and name: {} not found".format(user_id, username))
+			return HttpResponseRedirect("/templates/reset-failed")
+		
+		token_gen = PasswordResetTokenGenerator()
+		if not token_gen.check_token(user_instance, user_token):
+			LOGGER.debug("Token of user with id: {} and name: {} has become invalid".format(user_id, username))
+			return HttpResponseRedirect("/templates/reset-failed")
+	
+		request.session["user"] = user_instance.id
+		
+		return HttpResponseRedirect("/templates/reset-password")
+	
+	
+	@list_route(methods=["PUT", "POST"], parser_classes=(JSONParser, FormParser))
+	def resetpassword(self, request, *args, **kwargs):
+		new_password = get_param(request, "new_password")
+		confirmed_new_password = get_param(request, "confirmed_new_password")
+
+		try:
+			self._validate_password_dtls(new_password, confirmed_new_password)
+		except ValidationError as e:
+			return HttpResponseRedirect("/templates/reset-failed")
+		
+		user_instance = USER_MODEL.objects.get(pk=request.session.pop("user"))
+		user_instance.set_password(new_password)
+		user_instance.save()
+		try:
+			login(request, user_instance)
+		except Exception as e:
+			LOGGER.error("An error have occured, while performing login of password reset.")
+			LOGGER.exception(e)
+		
+		return HttpResponseRedirect("/templates/reset-success")
 
 
 class UserTokenViewSet(GenericViewSet, ListModelMixin):

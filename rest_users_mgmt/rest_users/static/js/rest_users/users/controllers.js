@@ -158,8 +158,84 @@ function changePasswordController(UsersService)
 	};
 };
 
+
+function acceptEmailController(UsersService)
+{
+	var vm = this;
+	vm.email = "";
+	
+	vm.onEmailSubmitSuccess = function(resp)
+	{
+		alert("Your password reset request submitted successfully. An email has been sent. Check your email address");
+	};
+	
+	vm.onEmailSubmitFailed = function(resp)
+	{
+		var msg = resp.detail || "An unknown error have occured";
+		alert(msg);
+	};
+	
+	vm.submitEmail = function()
+	{
+		UsersService.submitEmail({email: vm.email}, vm.onEmailSubmitSuccess, vm.onEmailSubmitFailed);
+	};
+};
+
+
+function resetPasswordController(UsersService)
+{
+	var vm = this;
+	vm.passwordDtls = {
+		new_password: "",
+		confirmed_new_password: ""
+	};
+	
+	vm.validatePasswords = function()
+	{
+		if (!vm.passwordDtls.new_password)
+		{
+			alert("Blank new password");
+			return false;
+		}
+		
+		else if (!vm.passwordDtls.confirmed_new_password)
+		{
+			alert("Blank confirm new password");
+			return false;
+		}
+		
+		else if (vm.passwordDtls.new_password != vm.passwordDtls.confirmed_new_password)
+		{
+			alert("New password and confirm passwords don't match");
+			return false;
+		}
+		
+		return true;
+	};
+	
+	vm.onPasswordChange = function(resp)
+	{
+		alert("Password reset successfully");
+	};
+	
+	vm.onPasswordChangeFailed = function(resp)
+	{
+		var msg = resp.detail || "An error have occured, while changing password";
+		alert(msg);
+	};
+	
+	vm.changePassword = function()
+	{
+		if (!vm.validatePasswords())
+			return;
+
+		UsersService.changePassword(vm.passwordDtls, vm.onPasswordChange, vm.onPasswordChangeFailed);
+	};
+};
+
 angular.module("users_app.controllers", ["users_app.services", "users_app.services.globals"])
 	.controller("LoginController", ["$window", "$state", "UserSessionService", "UsersService", loginController])
 	.controller("LandingController", ["UserSessionService", "UsersService", landingController])
 	.controller("RegistrationController", ["$state", "UsersService", registrationController])
-	.controller("ChangePasswordController", ["UsersService", changePasswordController]);
+	.controller("ChangePasswordController", ["UsersService", changePasswordController])
+	.controller("AcceptEmailController", ["UsersService", acceptEmailController]);

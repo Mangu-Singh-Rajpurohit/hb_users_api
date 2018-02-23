@@ -18,6 +18,10 @@ function usersService($resource)
 		changePassword: {
 			url: "/users/changepassword/",
 			method: "PUT",
+		},
+		submitEmail: {
+			url: "/users/sendemail/",
+			method: "POST"
 		}
 	});
 };
