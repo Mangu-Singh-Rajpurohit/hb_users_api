@@ -17,6 +17,17 @@ Rest-endpoints:-
 ================
 Following are the rest-endpoints that this application uses
 
+users/signup/
+users/signup/activate/
+users/heartbeat/
+users/logout/
+users/session/
+users/changepassword/
+users/resetpassword/
+users/sendemail/
+users/validate_reset_token/
+users/token/
+
 Running the project:-
 ============
 You can either run project either in terminal or in the docker or can be configured with nginx + uWSGI servers
