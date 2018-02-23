@@ -1,10 +1,12 @@
 import logging
+import uuid
 
 from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.conf import settings
 from django.db import transaction
 from django.http.response import HttpResponseRedirect
+from django.urls import reverse
 
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.authtoken.models import Token
@@ -20,6 +22,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_users.serializers import UserSignUpSerializer, UserPrimaryDtlsSerializer, \
 				UserAuthSerializer, UserTokenSerializer
 from rest_users.utils import UtilityManager
+from rest_users.tasks import send_account_activation_email, send_password_reset_email
 
 
 LOGGER = logging.getLogger("root")
@@ -60,8 +63,10 @@ class UserSignupViewSet(CreateModelMixin, GenericViewSet):
 			
 			LOGGER.debug("Created token for user")
 		
-		# Send email to user's email address asynchronously
-		UtilityManager.send_user_account_activation_email(request, user_instance, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+			target_url = request.build_absolute_uri(reverse("signup-activate"))
+			send_account_activation_email.delay(user_instance.id, target_url, task_id=uuid.uuid4())
+			
+			LOGGER.debug("Added task for sending request to user asynchronously")
 		
 		user_dtls_serializer = UserPrimaryDtlsSerializer(instance=user_instance)
 		LOGGER.info("User: %s created successfully", user_instance.username)
@@ -70,8 +75,8 @@ class UserSignupViewSet(CreateModelMixin, GenericViewSet):
 
 	@list_route(methods=["GET", "POST", "PUT"])
 	def activate(self, request, *args, **kwargs):
-		user_token = self.get_param(request, "token")
-		user_hash = self.get_param(request, "user")
+		user_token = get_param(request, "token")
+		user_hash = get_param(request, "user")
 		
 		if not user_token or not user_hash:
 			LOGGER.debug("Missing user_token/user_hash for user activation request")
@@ -201,8 +206,8 @@ class UserPasswordResetViewSet(GenericViewSet):
 		except USER_MODEL.DoesNotExist:
 			raise NotFound("Invalid email address")
 		
-		UtilityManager.reset_user_account_password_email(request, user_instance, 
-			settings.EMAIL_HOST_USER, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+		target_url = request.build_absolute_uri(reverse("password-reset-validate-reset-token"))
+		send_password_reset_email.delay(user_instance.id, target_url, task_id=uuid.uuid4())
 			
 		return Response({"status": "success"})
 

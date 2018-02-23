@@ -145,6 +145,12 @@ LOGGING = {
          'formatter': 'django',
          'filename': os.path.join(BASE_DIR, "server.log")
        },
+       'WorkerFileHandler': {
+          'level': 'DEBUG',
+          'class': 'logging.FileHandler',
+          'formatter': 'django',
+          'filename': os.path.join(BASE_DIR, "workers.log")
+       }
    },
 
    'loggers': {
@@ -152,6 +158,11 @@ LOGGING = {
          'handlers': ['FileHandler'],
          'propagate': True,
          'level': 'DEBUG',
+       },
+       "workers": {
+       'handlers': ['WorkerFileHandler'],
+       'propagate': True,
+       'level': 'DEBUG',
        }
     }
 }
@@ -176,3 +187,10 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = dict_production_settings.get("EMAIL_HOST_USER", None)
 EMAIL_HOST_PASSWORD = dict_production_settings.get("EMAIL_HOST_PASSWORD", None)
+
+# celery settings
+CELERY_BROKER_USER_NAME = dict_production_settings.get("CELERY_BROKER_USER_NAME", "guest")
+CELERY_BROKER_PASS = dict_production_settings.get("CELERY_BROKER_PASS", "guest")
+CELERY_BROKER_HOST = dict_production_settings.get("CELERY_BROKER_HOST", "localhost")
+
+CELERY_BROKER_URL = "amqp://{}:{}@{}:5672".format(CELERY_BROKER_USER_NAME, CELERY_BROKER_PASS, CELERY_BROKER_HOST)

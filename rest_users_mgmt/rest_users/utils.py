@@ -4,7 +4,6 @@ import urllib
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.urls import reverse
 
 
 class InvalidUserHashException(Exception):
@@ -28,12 +27,11 @@ class UtilityManager(object):
 		return splitted_user_dtls
 	
 	@staticmethod
-	def send_user_account_activation_email(request, user_dtls, sender, auth_user, auth_password):
+	def send_user_account_activation_email(target_url, user_dtls, sender, auth_user, auth_password):
 		user_hash = UtilityManager.calculate_user_hash(user_dtls)
 		user_token = PasswordResetTokenGenerator().make_token(user_dtls)
 		
 		query_string = urllib.urlencode({"user": user_hash, "token": user_token})
-		target_url = request.build_absolute_uri(reverse("signup-activate"))
 		url_with_query_str = "{}?{}".format(target_url, query_string)
 		
 		template_name = "account-activate-email.txt"
@@ -49,12 +47,11 @@ class UtilityManager(object):
 		return UtilityManager.send_email(subject, message_body, sender, receivers, auth_user, auth_password)
 	
 	@staticmethod
-	def reset_user_account_password_email(request, user_dtls, sender, auth_user, auth_password):
+	def reset_user_account_password_email(target_url, user_dtls, sender, auth_user, auth_password):
 		user_hash = UtilityManager.calculate_user_hash(user_dtls)
 		user_token = PasswordResetTokenGenerator().make_token(user_dtls)
 		
 		query_string = urllib.urlencode({"user": user_hash, "token": user_token})
-		target_url = request.build_absolute_uri(reverse("password-reset-validate-reset-token"))
 		url_with_query_str = "{}?{}".format(target_url, query_string)
 		
 		template_name = "password-reset-email.txt"
