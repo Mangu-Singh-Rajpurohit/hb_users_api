@@ -1,0 +1,20 @@
+FROM ubuntu:16.04
+
+MAINTAINER Mangu-Singh-Rajpurohit
+RUN apt-get update
+RUN apt-get install rabbitmq-server -y
+RUN apt-get install supervisor -y
+RUN apt-get install git -y
+RUN apt-get install python-pip -y
+RUN git clone https://github.com/Mangu-Singh-Rajpurohit/hb_users_api.git
+RUN pip install -r /hb_users_api/rest_users_mgmt/requirements.txt
+RUN cp /hb_users_api/rest_users_mgmt/rest_users_celery.conf /etc/supervisor/conf.d/rest_users_celery.conf
+
+RUN python /hb_users_api/rest_users_mgmt/manage.py migrate
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+WORKDIR /hb_users_api/rest_users_mgmt
+
+EXPOSE 8000
+
