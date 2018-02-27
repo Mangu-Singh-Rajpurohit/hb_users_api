@@ -1,0 +1,13 @@
+version: '2'
+services:
+  broker:
+    image: "rabbitmq:3"
+    ports:
+      - 5672:5672
+  web:
+    #image: msrajpurohit/rest_users
+    build:
+     context: .
+    ports:
+      - 8000:8000
+
