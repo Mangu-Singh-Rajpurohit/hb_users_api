@@ -82,10 +82,12 @@ WSGI_APPLICATION = 'rest_users_mgmt.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+DB_VOLUME = "/db"
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(DB_VOLUME, 'db.sqlite3'),
     }
 }
 

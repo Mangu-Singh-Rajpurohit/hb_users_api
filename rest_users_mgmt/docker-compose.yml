@@ -16,6 +16,17 @@ services:
       - 8000:8000
     networks:
       - mynet
+    volumes:
+      - '/tmp:/db'
+  celery:
+    hostname: "celery-workers.com"
+    build:
+      context: .
+    command: celery worker -A rest_users_mgmt --loglevel=INFO
+    networks:
+      - mynet
+    volumes:
+      - '/tmp:/db'
 networks:
   mynet:
     driver: bridge
