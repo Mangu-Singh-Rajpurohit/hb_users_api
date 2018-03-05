@@ -1,13 +1,21 @@
 version: '2'
 services:
   broker:
+    hostname: "rabbitmq.com"
     image: "rabbitmq:3"
     ports:
       - 5672:5672
+    networks:
+      - mynet
   web:
     #image: msrajpurohit/rest_users
+    hostname: "webserver.com"
     build:
      context: .
     ports:
       - 8000:8000
-
+    networks:
+      - mynet
+networks:
+  mynet:
+    driver: bridge
